@@ -23,3 +23,9 @@ VALUES
     ('Manveer', 'Wallis', 5, NULL),
     ('Nate', 'Adam', 6, 5),
     ('Misty', 'Livingston', 6, 5);
+
+
+SELECT employee.id, employee.first_name, employee.last_name, role.title AS role, role.salary AS salary, department.name AS department
+FROM employee
+LEFT JOIN role ON employee.role_id = role.id
+LEFT JOIN department ON role.department_id = department.id  
