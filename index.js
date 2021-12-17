@@ -23,7 +23,7 @@ let startApplication = () => {
                     viewEmployees(db)
                     break;
                 case "Add a department":
-                    console.log("clicked department")
+                    addDepartment(db)
                     break;
                 case "Add a role":
                     console.log("clicked role")
@@ -80,4 +80,26 @@ let viewEmployees = () => {
         console.table(rows)
     })
 }
+
+let addDepartment = () => {
+    const sql = `INSERT INTO department (name) VALUES (?)`
+    inquirer
+        .prompt({
+            type: 'text',
+            name: 'department',
+            message: 'Please enter the name of the Department you would like to add to the database:'
+        })
+        .then(function ({ department }) {
+            console.log(department)
+            db.query(sql, (department), (err,result) => {
+                if (err) throw err
+                console.log('Successfully added department to the database!')
+                startApplication()
+            })
+        })
+}
+
+
+
+
 startApplication()
