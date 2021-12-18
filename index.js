@@ -26,10 +26,10 @@ let startApplication = () => {
                     addDepartment(db)
                     break;
                 case "Add a role":
-                    console.log("clicked role")
+                    addRole(db)
                     break;
                 case "Add an employee":
-                    console.log("adding employee")
+                    addEmployee(db)
                     break;
                 case "Update an employee":
                     console.log("update employees")
@@ -44,9 +44,9 @@ let startApplication = () => {
 let viewDepartments = () => {
     const sql = `SELECT department.name AS Department, department.id AS id
                 FROM department;`
-    db.query(sql, (err,rows) => {
-        if (err){
-            res.status(500).json({ error: err.message})
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message })
             return
         }
         console.table(rows)
@@ -58,7 +58,7 @@ let viewRoles = () => {
     const sql = `SELECT role.title, role.id, department.name AS department, role.salary
                 FROM role
                 LEFT JOIN department ON role.department_id = department.id;`
-    db.query(sql, (err,rows) => {
+    db.query(sql, (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message })
             return
@@ -72,7 +72,7 @@ let viewEmployees = () => {
                  FROM employee
                  LEFT JOIN role ON employee.role_id = role.id
                  LEFT JOIN department ON role.department_id = department.id;`
-    db.query(sql, (err,rows) => {
+    db.query(sql, (err, rows) => {
         if (err) {
             res.status(500).json({ error: err.message })
             return
@@ -90,16 +90,84 @@ let addDepartment = () => {
             message: 'Please enter the name of the Department you would like to add to the database:'
         })
         .then(function ({ department }) {
-            console.log(department)
-            db.query(sql, (department), (err,result) => {
+            db.query(sql, (department), (err, result) => {
                 if (err) throw err
-                console.log('Successfully added department to the database!')
+                console.log('Successfully added ' + department + ' to the database!')
                 startApplication()
             })
         })
 }
 
+let addRole = () => {
 
+    db.query(`SELECT * FROM department`, (err, result) => {
+        if (err) throw err
+        const choices = result.map(choice => {
+            return choice = { ...choice, value: choice.id }
+        })
+        console.log(choices)
+        inquirer
+            .prompt([{
+                type: 'text',
+                name: 'title',
+                message: 'Please enter the title of the role you would like added to the database:'
+            },
+            {
+                type: 'text',
+                name: 'salary',
+                message: 'Please enter the salary of the role you would like added to the database:'
+            },
+            {
+                type: 'list',
+                name: 'department_id',
+                message: 'Which department is this new role under?',
+                choices: choices
+            }
+            ]).then(function ({ title, salary, department_id }) {
+                const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`
+                db.query(sql, [title, salary, department_id], (err, result) => {
+                    if (err) throw err
+                    console.log('Success')
+                    startApplication()
+                })
+            })
+    })
+}
 
+let addEmployee = () => {
+    db.query(`SELECT id,title FROM role`, (err, result) => {
+        if (err) throw err
+        const choices = result.map(choice => {
+            return choice = { ...choice, value: choice.id }
 
-startApplication()
+        })
+        console.log(choices)
+        inquirer
+            .prompt([{
+                type: 'text',
+                name: 'first_name',
+                message: 'Please enter the first name for the employee:'
+            },
+            {
+                type: 'text',
+                name: 'last_name',
+                message: "Please enter the last name for the employee:"
+            },
+            {
+                type: 'list',
+                name: 'role_id',
+                message: 'Which role is this employee under?',
+                choices: choices
+            }
+            ]).then(function ({ first_name, last_name, role_id }) {
+                const sql = `INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)`
+                db.query(sql, [first_name, last_name, role_id], (err, result) => {
+                    if (err) throw err
+                    console.log('Success')
+                    startApplication()
+                })
+            })
+    })
+}
+
+startApplication() 
