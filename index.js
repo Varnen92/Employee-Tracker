@@ -137,11 +137,10 @@ let addRole = () => {
 let addEmployee = () => {
     db.query(`SELECT id,title FROM role`, (err, result) => {
         if (err) throw err
-        const choices = result.map(choice => {
-            return choice = { ...choice, value: choice.id }
-
-        })
-        console.log(choices)
+        const choices = result.map(({ id, title}) => ({ name: title, value: id}))
+        db.query(`SELECT * FROM employee`, (err,result) => {
+            if (err) throw err
+        const employeeList = result.map(({ id, first_name, last_name}) => ({ name: first_name + " " + last_name, value: id}))
         inquirer
             .prompt([{
                 type: 'text',
@@ -158,14 +157,21 @@ let addEmployee = () => {
                 name: 'role_id',
                 message: 'Which role is this employee under?',
                 choices: choices
+            },
+            {
+                type: 'list',
+                name: 'manager_id',
+                message: 'Who is the manager for this employee?',
+                choices: employeeList
             }
-            ]).then(function ({ first_name, last_name, role_id }) {
-                const sql = `INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)`
-                db.query(sql, [first_name, last_name, role_id], (err, result) => {
+            ]).then(function ({ first_name, last_name, role_id, manager_id}) {
+                const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`
+                db.query(sql, [first_name, last_name, role_id, manager_id], (err, result) => {
                     if (err) throw err
                     console.log('Success')
                     startApplication()
                 })
+            })
             })
     })
 }
