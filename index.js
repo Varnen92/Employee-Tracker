@@ -2,7 +2,7 @@ const inquirer = require('inquirer')
 const db = require('./db/connection')
 const cTable = require('console.table')
 
-
+// Generates list of prompts to allow user to execute various functionality
 let startApplication = () => {
     inquirer
         .prompt({
@@ -41,6 +41,7 @@ let startApplication = () => {
         })
 }
 
+// allows users to view departments
 let viewDepartments = () => {
     const sql = `SELECT department.name AS Department, department.id AS id
                 FROM department;`
@@ -59,6 +60,7 @@ let viewDepartments = () => {
 
 }
 
+//Allows user to view roles across database
 let viewRoles = () => {
     const sql = `SELECT role.title, role.id, department.name AS department, role.salary
                 FROM role
@@ -77,6 +79,7 @@ let viewRoles = () => {
         })
 }
 
+//Allows user to view all employees across database
 let viewEmployees = () => {
     const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title AS role, role.salary AS salary, department.name AS department, manager_id AS Manager
                  FROM employee
@@ -96,6 +99,7 @@ let viewEmployees = () => {
         })
 }
 
+//Allows user to add department to the database
 let addDepartment = () => {
     const sql = `INSERT INTO department (name) VALUES (?)`
     inquirer
@@ -113,6 +117,7 @@ let addDepartment = () => {
         })
 }
 
+//Allows users to add role to the database
 let addRole = () => {
 
     db.query(`SELECT * FROM department`, (err, result) => {
@@ -147,6 +152,8 @@ let addRole = () => {
             })
     })
 }
+
+//Allows user to add employees to the database
 
 let addEmployee = () => {
     db.query(`SELECT id,title FROM role`, (err, result) => {
@@ -190,6 +197,7 @@ let addEmployee = () => {
     })
 }
 
+//Allows users to updateEmployee as needed to new role
 let updateEmployee = () => {
     db.query('SELECT first_name, last_name FROM employee', (err, result) => {
         if (err) throw err
