@@ -31,7 +31,7 @@ let startApplication = () => {
                 case "Add an employee":
                     addEmployee(db)
                     break;
-                case "Update an employee":
+                case "Update an employee role":
                     updateEmployee(db)
                     break;
                 case "Quit":
@@ -44,26 +44,37 @@ let startApplication = () => {
 let viewDepartments = () => {
     const sql = `SELECT department.name AS Department, department.id AS id
                 FROM department;`
-    db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message })
-            return
-        }
-        console.table(rows)
-    })
+    db.promise().query(sql)
+        .then(rows => {
+            console.table(rows[0])
+            inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: 'Please confirm when you are ready to return back to the main menu'
+            })
+                .then(confirm => {
+                    startApplication()
+                })
+        })
+
 }
 
 let viewRoles = () => {
     const sql = `SELECT role.title, role.id, department.name AS department, role.salary
                 FROM role
                 LEFT JOIN department ON role.department_id = department.id;`
-    db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message })
-            return
-        }
-        console.table(rows)
-    })
+    db.promise().query(sql)
+        .then(rows => {
+            console.table(rows[0])
+            inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: 'Please confirm when you are ready to return back to the main menu'
+            })
+                .then(confirm => {
+                    startApplication()
+                })
+        })
 }
 
 let viewEmployees = () => {
@@ -71,13 +82,18 @@ let viewEmployees = () => {
                  FROM employee
                  LEFT JOIN role ON employee.role_id = role.id
                  LEFT JOIN department ON role.department_id = department.id;`
-    db.query(sql, (err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message })
-            return
-        }
-        console.table(rows)
-    })
+    db.promise().query(sql)
+        .then(rows => {
+            console.table(rows[0])
+            inquirer.prompt({
+                type: 'confirm',
+                name: 'confirm',
+                message: 'Please confirm when you are ready to return back to the main menu'
+            })
+                .then(confirm => {
+                    startApplication()
+                })
+        })
 }
 
 let addDepartment = () => {
@@ -175,29 +191,29 @@ let addEmployee = () => {
 }
 
 let updateEmployee = () => {
-    db.query('SELECT first_name, last_name FROM employee', (err,result) => {
+    db.query('SELECT first_name, last_name FROM employee', (err, result) => {
         if (err) throw err
-        const employeeList = result.map(({ first_name, last_name}) => ({ name: first_name + " " + last_name}))
-            db.query('SELECT id,title FROM role', (err,result) =>{
-                if (err) throw err
-                const roles = result.map(({ id, title }) => ({ name: title, value: id }))
-                inquirer
-                    .prompt([{
-                        type: 'list',
-                        name: 'name',
-                        message: 'Which employee would you like to update the Role for?',
-                        choices: employeeList
-                    },
-                    {
-                        type: 'list',
-                        name: 'role',
-                        message: 'Which role would you like this employee to now be under?',
-                        choices: roles
-                    }
-                ]).then(function ({ role, name}) {
+        const employeeList = result.map(({ first_name, last_name }) => ({ name: first_name + " " + last_name }))
+        db.query('SELECT id,title FROM role', (err, result) => {
+            if (err) throw err
+            const roles = result.map(({ id, title }) => ({ name: title, value: id }))
+            inquirer
+                .prompt([{
+                    type: 'list',
+                    name: 'name',
+                    message: 'Which employee would you like to update the Role for?',
+                    choices: employeeList
+                },
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: 'Which role would you like this employee to now be under?',
+                    choices: roles
+                }
+                ]).then(function ({ role, name }) {
                     const splitName = name.split(' ')
                     const sql = `UPDATE employee SET role_id = ${role} WHERE first_name = '${splitName[0]}' AND last_name = '${splitName[1]}'`
-                    db.query(sql, (err,result) =>{
+                    db.query(sql, (err, result) => {
                         if (err) throw err
                         console.log('Successfully updated employee to their new role!')
                         startApplication()
@@ -209,4 +225,3 @@ let updateEmployee = () => {
 }
 
 startApplication()
- 
